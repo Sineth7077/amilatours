@@ -1,5 +1,6 @@
 
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -20,6 +21,7 @@ export default {
     },
     extend: {
       colors: {
+        // Legacy template palette (kept for backwards compatibility)
         safari: {
           green: "#2A624C",
           brown: "#8B4513",
@@ -27,6 +29,15 @@ export default {
           beige: "#F5F5DC",
           lightgreen: "#3D8D73", // lighter shade of #2A624C
           darkgreen: "#1A3E31", // darker shade of #2A624C
+        },
+        // Premium brand palette
+        brand: {
+          forest: "#173D32",
+          deep: "#0F2B23",
+          ivory: "#F7F4EC",
+          charcoal: "#202622",
+          sand: "#D9C8AA",
+          mist: "#EBE5D7", // soft divider / section tint
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -63,7 +74,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Poppins", "sans-serif"],
+        sans: ["Poppins", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Fraunces", "Georgia", "Cambria", "serif"],
       },
       keyframes: {
         "accordion-down": {
@@ -78,13 +90,18 @@ export default {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        fadeUp: {
+          "0%": { opacity: "0", transform: "translateY(18px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 1s ease-in forwards",
+        fadeUp: "fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;
