@@ -1,107 +1,181 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Phone } from "lucide-react";
-import { usePageMeta } from "@/lib/seo";
-import { siteConfig } from "@/config/site";
-import { waLink, generalInquiryMessage } from "@/lib/whatsapp";
+import { ArrowRight, Car, Heart, MapPin, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SectionHeading } from "@/components/SectionHeading";
+import { PageHero } from "@/components/PageHero";
+import { Reveal } from "@/components/Reveal";
+import { siteConfig, hasVerifiedContact } from "@/config/site";
 import { aboutHeroImage } from "@/config/hero";
+import { generalInquiryMessage, waLink } from "@/lib/whatsapp";
+import { usePageMeta } from "@/lib/seo";
 
 export default function About() {
   usePageMeta({
-    title: "About Amila Tours — Independent Sri Lankan Tour Operator",
+    title: "About Amila Tours — Sri Lanka Travel, Personally Arranged",
     description:
-      "About Amila Tours: an independent Sri Lankan tour operator arranging private tours, island-wide transport and flexible itineraries with trusted local drivers.",
+      "Amila Tours is a Sri Lanka travel company arranging private, driver-led journeys and tailor-made itineraries with trusted local drivers.",
     image: aboutHeroImage.src,
+    imageAlt: aboutHeroImage.alt,
     path: "/about",
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <main>
-        <section className="relative h-[420px] md:h-[520px] w-full overflow-hidden">
-          <img
-            src={aboutHeroImage.src}
-            alt={aboutHeroImage.alt}
-            width={aboutHeroImage.width}
-            height={aboutHeroImage.height}
-            loading="eager"
-            decoding="async"
-            className="h-full w-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#173d32]/70 via-[#173d32]/25 to-transparent" />
-          <div className="relative container mx-auto px-4 h-full flex items-center">
-            <h1 className="font-display text-3xl md:text-4xl font-semibold text-white leading-tight">
-              About Amila Tours
-            </h1>
-          </div>
-        </section>
+    <div className="bg-background">
+      <PageHero
+        image={aboutHeroImage}
+        eyebrow="About Amila Tours"
+        title="A local team that knows the island — and travels it with you."
+        description="We arrange private Sri Lanka journeys with dedicated drivers, island-wide transport and itineraries built around your pace."
+        size="lg"
+      />
 
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-              <div>
-                <h2 className="font-display text-2xl md:text-3xl font-semibold text-[#0f2b23] mb-5">
-                  An independent Sri Lankan tour operator
-                </h2>
-                <p className="text-muted-foreground leading-relaxed mb-6">
-                  Amila Tours arranges private journeys across Sri Lanka for
-                  travellers who want a flexible, personalised trip — without
-                  fixed packages or rigid itineraries. Whether you are visiting
-                  cultural sites, national parks, hill country or the coast, we
-                  organise transport and a plan built around your dates and
-                  interests.
-                </p>
-                <p className="text-muted-foreground leading-relaxed mb-6">
-                  Every journey uses a private, air-conditioned vehicle with an
-                  experienced local driver, and we offer island-wide pickups —
-                  including airport transfers from Bandaranaike International
-                  Airport.
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  We are a small, direct team: you speak with us, not a
-                  call centre. Messages are answered daily from 7:00 AM to
-                  9:00 PM (GMT+5:30).
-                </p>
+      <section className="py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <Reveal>
+              <div className="overflow-hidden rounded-2xl">
+                <img
+                  src="/Gallery/gallery-08.jpeg"
+                  alt="Sri Lankan travel scene"
+                  width={900}
+                  height={1600}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
               </div>
-
-              <div className="space-y-5">
-                <div className="rounded-lg border border-border bg-background p-6">
-                  <h3 className="font-semibold text-[#0f2b23] mb-2">What we arrange</h3>
-                  <ul className="text-sm text-muted-foreground space-y-3 list-disc pl-5">
-                    <li>Private tours with a driver-guide</li>
-                    <li>Cultural and heritage visits</li>
-                    <li>Nature and wildlife excursions</li>
-                    <li>Scenic hill-country journeys</li>
-                    <li>Beach and coastal stays</li>
-                    <li>Airport transfers and point-to-point transport</li>
-                  </ul>
-                </div>
-                <div className="rounded-lg border border-brand-deep bg-brand-deep p-6 text-brand-ivory">
-                  <h3 className="font-semibold mb-2">Get in touch</h3>
-                  <p className="text-brand-ivory/90 text-sm mb-4">
-                    Tell us your travel dates and group size, and we will propose
-                    a custom itinerary.
+            </Reveal>
+            <Reveal delay={120}>
+              <SectionHeading
+                eyebrow="Our story"
+                title="Built on the road, guided by hospitality"
+              />
+              <p className="mt-6 text-base leading-relaxed text-muted-foreground">
+                Amila Tours grew out of years driving the island — through
+                ancient cities, cool hill country, wildlife parks and the long
+                coastlines. We saw travellers arrive with big expectations and
+                leave with more than they hoped for, simply because someone
+                local had read the trip well.
+              </p>
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+                Today we plan and drive private journeys for couples, families
+                and small groups. We handle airport pickups, daily transport,
+                accommodation guidance and the small adjustments that make a
+                long trip feel effortless.
+              </p>
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+                We are not a booking engine. We are a team you can call, and a
+                driver you will come to know.
+              </p>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+      <section className="bg-brand-ivory py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-6">
+          <Reveal>
+            <SectionHeading
+              eyebrow="What we do"
+              title="Everything between arrival and departure"
+              description="One point of contact, one trusted driver, and a route shaped around you."
+            />
+          </Reveal>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: Car,
+                title: "Airport & island transfers",
+                text: "Private pickups from any airport and daily transport across the island.",
+              },
+              {
+                icon: MapPin,
+                title: "Tailor-made itineraries",
+                text: "Routes built around your dates, interests, budget and travel style.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Trusted local drivers",
+                text: "Experienced, English-speaking drivers who know the roads and the island.",
+              },
+              {
+                icon: Heart,
+                title: "Flexible on the road",
+                text: "Change a day, stay longer, skip a stop — we adapt as you travel.",
+              },
+            ].map((item, index) => (
+              <Reveal key={item.title} delay={index * 80}>
+                <div className="h-full rounded-2xl border border-brand-sand/40 bg-white p-6">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-mist text-brand-forest">
+                    <item.icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-5 font-display text-lg text-brand-charcoal">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {item.text}
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Link to="/contact">
-                      <Button size="sm">Plan Your Trip</Button>
-                    </Link>
-                    <a
-                      href={waLink(generalInquiryMessage())}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md border border-brand-ivory/30 bg-brand-ivory/10 text-brand-ivory hover:bg-brand-ivory/20 transition-colors"
-                    >
-                      <Phone className="w-4 h-4" />
-                      WhatsApp
-                    </a>
-                  </div>
                 </div>
-              </div>
-            </div>
+              </Reveal>
+            ))}
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      <section className="py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              { value: "Island-wide", label: "Coverage across Sri Lanka" },
+              { value: "Private", label: "Dedicated driver for every journey" },
+              { value: "Flexible", label: "Itineraries that adapt as you travel" },
+            ].map((stat, index) => (
+              <Reveal key={stat.label} delay={index * 80}>
+                <div className="text-center">
+                  <p className="font-display text-4xl text-brand-forest md:text-5xl">
+                    {stat.value}
+                  </p>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {stat.label}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-brand-deep py-20 md:py-28">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <Reveal>
+            <h2 className="font-display text-3xl leading-tight text-brand-ivory md:text-5xl">
+              Ready to plan your Sri Lanka journey?
+            </h2>
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-brand-ivory/75 md:text-lg">
+              Share your dates and interests. We will send a personalised
+              itinerary and a clear quote — no obligation.
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button
+                asChild
+                size="lg"
+                className="bg-brand-ivory text-brand-deep hover:bg-brand-sand"
+              >
+                <Link to="/contact">Plan Your Journey</Link>
+              </Button>
+              {hasVerifiedContact && (
+                <a
+                  href={waLink(generalInquiryMessage())}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-md border border-brand-ivory/40 bg-brand-ivory/10 px-8 py-3 text-sm font-medium text-brand-ivory backdrop-blur transition-colors hover:bg-brand-ivory/20"
+                >
+                  Message on WhatsApp
+                </a>
+              )}
+            </div>
+          </Reveal>
+        </div>
+      </section>
     </div>
   );
-};
+}

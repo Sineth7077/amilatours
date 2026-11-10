@@ -34,64 +34,7 @@
     --ring: 163 45% 16%;
 
     --radius: 0.375rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
-.bg-white {
-  background-color: #fff;
 }
 
 @layer base {
@@ -101,6 +44,8 @@
 
   html {
     scroll-behavior: smooth;
+    /* Keep anchored sections clear of the fixed header */
+    scroll-padding-top: 5.5rem;
     -webkit-text-size-adjust: 100%;
   }
 
@@ -118,6 +63,11 @@
     font-family: "Fraunces", Georgia, Cambria, serif;
     font-weight: 500;
     letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   ::selection {
@@ -146,48 +96,79 @@
   }
 }
 
-
-.-mt-8 {
-  margin-top: -2rem !important;
-}
-
+/* ── Back-to-top progress button ─────────────────────────────── */
 .progress-wrap {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  width: 60px;
-  height: 60px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #173d32;
   cursor: pointer;
-  z-index: 9999;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
-  border-radius: 50%;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
-  background: transparent;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s,
+    box-shadow 0.25s ease;
+  box-shadow: 0 6px 20px rgba(15, 43, 35, 0.16);
 }
+
 .progress-wrap.active-progress {
   opacity: 1;
   visibility: visible;
+  transform: translateY(0);
 }
+
+.progress-wrap:hover {
+  box-shadow: 0 10px 26px rgba(15, 43, 35, 0.24);
+}
+
+.progress-wrap:focus-visible {
+  outline: 2px solid #173d32;
+  outline-offset: 3px;
+}
+
+.progress-circle {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
 .progress-track {
-  stroke: #e2e8f0; /* light gray ring */
+  stroke: #e2e8f0;
 }
+
 .progress-indicator {
-  stroke: #2a624b; /* dark safari green progress */
+  stroke: #2a624b;
   stroke-linecap: round;
-  transition: stroke-dashoffset 10ms linear;
 }
+
 .progress-arrow {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
   color: #2a624b;
   pointer-events: none;
   user-select: none;
-  font-family: Arial, sans-serif;
-  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .progress-wrap {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 48px;
+    height: 48px;
+  }
 }

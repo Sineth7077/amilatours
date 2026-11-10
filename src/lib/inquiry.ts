@@ -2,19 +2,17 @@
  * ─────────────────────────────────────────────────────────────
  *  INQUIRY SUBMISSION ADAPTER
  *
- *  ⚠️ DEMO FLOW — there is currently NO backend or email service
- *  connected, so nothing is actually sent anywhere. The form
- *  validates, simulates submission, then hands the traveller a
- *  working WhatsApp flow so the inquiry genuinely reaches the
- *  operator.
- *
- *  TO INTEGRATE A REAL BACKEND LATER:
- *    1. Uncomment the fetch() below and point it at your endpoint.
- *    2. Set `demo: false` in the result (the form already labels
- *       demo results transparently).
- *  The form component does not need to change.
+ *  The site has no backend by default. If `VITE_INQUIRY_ENDPOINT`
+ *  is set (Formspree, Basin, a serverless function, …) the payload
+ *  is POSTed there and `delivered` is true. Otherwise the form
+ *  validates the details and hands them to the traveller as a
+ *  ready-to-send WhatsApp / email message, so enquiries are never
+ *  silently discarded.
  * ─────────────────────────────────────────────────────────────
  */
+
+import { siteConfig } from "@/config/site";
+import { waLink } from "@/lib/whatsapp";
 
 export interface InquiryPayload {
   name: string;
@@ -29,60 +27,105 @@ export interface InquiryPayload {
 
 export interface InquiryResult {
   ok: boolean;
-  /** True while no backend is connected. */
-  demo: boolean;
+  /** True only when a configured endpoint accepted the inquiry. */
+  delivered: boolean;
   error?: string;
 }
+
+const ENDPOINT = import.meta.env.VITE_INQUIRY_ENDPOINT?.trim();
+const REQUEST_TIMEOUT_MS = 10_000;
+
+/** True when a real submission endpoint is configured for this build. */
+export const hasInquiryEndpoint = Boolean(ENDPOINT);
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function submitInquiry(
   payload: InquiryPayload
 ): Promise<InquiryResult> {
-  // Simulated latency so loading states are real and testable.
-  await new Promise((resolve) => setTimeout(resolve, 700));
-
-  // Backend integration point (kept commented until a service exists):
-  // try {
-  //   const res = await fetch("/api/inquiries", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(payload),
-  //   });
-  //   if (!res.ok) return { ok: false, demo: false, error: "Something went wrong. Please try WhatsApp instead." };
-  //   return { ok: true, demo: false };
-  // } catch {
-  //   return { ok: false, demo: false, error: "Network error. Please try WhatsApp instead." };
-  // }
-
-  if (!payload.name.trim() || !payload.email.trim()) {
+  if (
+    !payload.name.trim() ||
+    (!payload.email.trim() && !payload.phone.trim())
+  ) {
     return {
       ok: false,
-      demo: true,
-      error: "Please provide your name and email address.",
+      delivered: false,
+      error:
+        "Please provide your name and either an email address or a phone number.",
     };
   }
 
-  return { ok: true, demo: true };
+  // No endpoint configured: validate locally and let the UI hand the
+  // details over to WhatsApp / email / clipboard.
+  if (!ENDPOINT) {
+    await delay(400);
+    return { ok: true, delivered: false };
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        delivered: false,
+        error:
+          "We could not send your inquiry just now. Please try again, or contact us directly.",
+      };
+    }
+
+    return { ok: true, delivered: true };
+  } catch {
+    return {
+      ok: false,
+      delivered: false,
+      error:
+        "A network problem stopped your inquiry from sending. Please try again, or contact us directly.",
+    };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-/** Turns the form values into the pre-filled WhatsApp message. */
-export function inquiryToWhatsAppMessage(payload: InquiryPayload): string {
+/** Plain-text summary of an inquiry, used for WhatsApp, email and copy. */
+export function inquiryMessage(payload: InquiryPayload): string {
   const lines = [
-    `Hello ${siteConfigName}! I'd like to plan a trip.`,
+    `Hello ${siteConfig.name}! I'd like to plan a trip to Sri Lanka.`,
     "",
     `Name: ${payload.name}`,
-    `Email: ${payload.email}`,
-    `Phone / WhatsApp: ${payload.phone}`,
+    payload.email && `Email: ${payload.email}`,
+    payload.phone && `Phone / WhatsApp: ${payload.phone}`,
     payload.dates && `Travel dates: ${payload.dates}`,
     payload.travellers && `Travellers: ${payload.travellers}`,
-    payload.destination && `Destination of interest: ${payload.destination}`,
-    payload.tour && `Itinerary: ${payload.tour}`,
+    payload.tour && `Itinerary of interest: ${payload.tour}`,
     "",
-    payload.message ? payload.message : "Please help me plan my journey.",
-  ].filter((line): line is string => Boolean(line));
+    payload.message || "Please help me plan my journey.",
+  ];
 
-  return lines.join("\n");
+  return lines.filter((line): line is string => Boolean(line)).join("\n");
 }
 
-// Imported lazily to keep this module dependency-light.
-import { siteConfig as siteConfigName_ } from "@/config/site";
-const siteConfigName = siteConfigName_.name;
+/** Pre-filled WhatsApp link for a completed inquiry. */
+export function inquiryWhatsAppLink(payload: InquiryPayload): string {
+  return waLink(inquiryMessage(payload));
+}
+
+/** Pre-filled mailto link, or null when no email address is configured. */
+export function inquiryMailtoLink(payload: InquiryPayload): string | null {
+  if (!siteConfig.email) return null;
+  const subject = `Trip inquiry — ${payload.name}`;
+  return `mailto:${siteConfig.email}?subject=${encodeURIComponent(
+    subject
+  )}&body=${encodeURIComponent(inquiryMessage(payload))}`;
+}

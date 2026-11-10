@@ -24,24 +24,24 @@ export const siteConfig = {
     "Private tours and travel across Sri Lanka — comfortable vehicles, flexible itineraries, airport transfers and personal planning with trusted local drivers.",
 
   /** Flip to false once real contact details are in place. */
-  isPlaceholderContact: true,
+  isPlaceholderContact: false,
 
   /** Approved logo (transparent PNG, stored with the gallery assets). */
   logo: "/Gallery/Amila%20Tours%20Sri%20Lanka%20Logo.png",
 
   phone: {
-    display: "+94 77 123 4567",
-    tel: "+94771234567",
+    display: "+94 77 802 3760",
+    tel: "+94778023760",
   },
 
   whatsapp: {
     /** Digits only, including country code (used for wa.me links). */
-    number: "94771234567",
-    display: "+94 77 123 4567",
+    number: "94778023760",
+    display: "+94 77 802 3760",
   },
 
-  /** No verified email address exists yet — leave empty until confirmed. */
-  email: "",
+  /** Verified email address. */
+  email: "amilabalasuriya1@gmail.com",
 
   location: "Sri Lanka — island-wide pickups",
 

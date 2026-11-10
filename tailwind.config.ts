@@ -21,15 +21,7 @@ export default {
     },
     extend: {
       colors: {
-        // Legacy template palette (kept for backwards compatibility)
-        safari: {
-          green: "#2A624C",
-          brown: "#8B4513",
-          gold: "#DAA520",
-          beige: "#F5F5DC",
-          lightgreen: "#3D8D73", // lighter shade of #2A624C
-          darkgreen: "#1A3E31", // darker shade of #2A624C
-        },
+        /* legacy safari colors removed and replaced with premium brand palette below */
         // Premium brand palette
         brand: {
           forest: "#173D32",
@@ -38,6 +30,8 @@ export default {
           charcoal: "#202622",
           sand: "#D9C8AA",
           mist: "#EBE5D7", // soft divider / section tint
+          rose: "#C04A45",
+          sage: "#6B8F73",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -94,12 +88,33 @@ export default {
           "0%": { opacity: "0", transform: "translateY(18px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        // Premium entrance animations
+        heroFadeIn: {
+          "0%": { opacity: 0, transform: "translateY(20px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
+        },
+        cardStagger: {
+          "0%": { opacity: 0, transform: "translateY(12px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
+        },
+        subtleScale: {
+          "0%": { transform: "scale(0.95)", opacity: 0 },
+          "100%": { transform: "scale(1)", opacity: 1 },
+        },
+        "fade-in-up": {
+          "0%": { opacity: 0, transform: "translateY(20px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 1s ease-in forwards",
         fadeUp: "fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        heroFadeIn: "heroFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        cardStagger: "cardStagger 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        subtleScale: "subtleScale 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        "fade-in-up": "fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards",
       },
     },
   },

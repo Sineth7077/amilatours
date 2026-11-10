@@ -28,15 +28,4 @@ export const galleryImages: GalleryImage[] = [
   { src: "/Gallery/gallery-19.jpeg", alt: "Sri Lanka photograph from the Amila Tours gallery", width: 2048, height: 1536 },
 ];
 
-/** Photographs chosen for the curated homepage preview */
-export const homePreviewImages: GalleryImage[] = [
-  galleryImages[0],
-  galleryImages[6],
-  galleryImages[9],
-  galleryImages[12],
-  galleryImages[14],
-  galleryImages[17],
-];
-
-/** The wide hero banner image */
-export const heroImage: GalleryImage = galleryImages[12];
+/** Photographs chosen for the curated homepage preview live in `config/hero.ts`. */

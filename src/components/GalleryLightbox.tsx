@@ -1,8 +1,6 @@
-"use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { GalleryImage } from "@/config/gallery";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import type { GalleryImage } from "@/config/gallery";
 
 interface GalleryLightboxProps {
   open: boolean;
@@ -13,10 +11,10 @@ interface GalleryLightboxProps {
 
 /**
  * Accessible image lightbox.
- * - Esc closes, arrow keys navigate
+ * - Esc closes, arrow keys navigate, focus is trapped inside
  * - Focus returns to the trigger when closed
- * - Clicking the backdrop closes
- * - Body scroll is locked while open
+ * - Clicking the backdrop closes; clicking the photo does not
+ * - Body scroll is locked without layout shift
  */
 export const GalleryLightbox = ({
   open,
@@ -25,106 +23,167 @@ export const GalleryLightbox = ({
   onClose,
 }: GalleryLightboxProps) => {
   const [index, setIndex] = useState(initialIndex);
-  const previousFocus = useRef<HTMLElement | null>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
 
+  const count = images.length;
   const image = images[index];
-  const prevIndex = (index - 1 + images.length) % images.length;
-  const nextIndex = (index + 1) % images.length;
+  const prevIndex = count > 0 ? (index - 1 + count) % count : 0;
+  const nextIndex = count > 0 ? (index + 1) % count : 0;
 
+  const goPrev = useCallback(() => setIndex(prevIndex), [prevIndex]);
+  const goNext = useCallback(() => setIndex(nextIndex), [nextIndex]);
+
+  // Keep the visible photo in sync with the requested starting point.
   useEffect(() => {
     if (!open) return;
+    setIndex(Math.max(0, Math.min(initialIndex, Math.max(count - 1, 0))));
+  }, [open, initialIndex, count]);
+
+  // Lock background scrolling and restore focus on close.
+  useEffect(() => {
+    if (!open) return;
+
     const active = document.activeElement as HTMLElement | null;
     previousFocus.current =
       active && active.tagName !== "BODY" ? active : null;
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.width = "100%";
+
+    const { body, documentElement } = document;
+    const previousOverflow = body.style.overflow;
+    const previousPadding = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - documentElement.clientWidth;
+
+    body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;
+
+    containerRef.current?.focus({ preventScroll: true });
 
     return () => {
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
+      body.style.overflow = previousOverflow;
+      body.style.paddingRight = previousPadding;
       previousFocus.current?.focus({ preventScroll: true });
     };
   }, [open]);
 
+  // Keyboard controls + focus trap.
   useEffect(() => {
     if (!open) return;
-    setIndex(Math.max(0, Math.min(initialIndex, images.length - 1)));
-  }, [open, initialIndex, images.length]);
 
-  const onKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-      else if (event.key === "ArrowLeft") setIndex(prevIndex);
-      else if (event.key === "ArrowRight") setIndex(nextIndex);
-    },
-    [onClose, prevIndex, nextIndex]
-  );
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goPrev();
+        return;
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goNext();
+        return;
+      }
+      if (event.key !== "Tab") return;
 
-  const handleLoad = () => {
-    imageRef.current?.focus();
-  };
+      const focusable = containerRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable || focusable.length === 0) return;
 
-  if (!open) return null;
+      const items = Array.from(focusable);
+      const first = items[0];
+      const last = items[items.length - 1];
+      const current = document.activeElement;
+
+      if (event.shiftKey && (current === first || current === containerRef.current)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && current === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose, goPrev, goNext]);
+
+  // Warm the cache for the neighbouring photos.
+  useEffect(() => {
+    if (!open || count < 2) return;
+    [prevIndex, nextIndex].forEach((i) => {
+      const neighbour = images[i];
+      if (!neighbour) return;
+      const img = new Image();
+      img.src = neighbour.src;
+    });
+  }, [open, count, prevIndex, nextIndex, images]);
+
+  if (!open || !image) return null;
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-50 flex flex-col"
-      aria-modal="true"
+      tabIndex={-1}
+      className="fixed inset-0 z-[80] flex flex-col outline-none"
       role="dialog"
-      aria-label="Image gallery lightbox"
-      onKeyDown={onKeyDown}
+      aria-modal="true"
+      aria-label={`Photo ${index + 1} of ${count}: ${image.alt}`}
     >
       <div
-        className="absolute inset-0 bg-brand-charcoal/90 backdrop-blur-sm"
         aria-hidden="true"
         onClick={onClose}
+        className="absolute inset-0 cursor-zoom-out bg-brand-charcoal/92 backdrop-blur-sm"
       />
-      <div className="relative z-10 flex-grow flex items-center justify-center p-6 md:p-12 min-h-[60vh]">
+
+      <div className="pointer-events-none relative z-10 flex flex-1 items-center justify-center p-4 sm:p-8 md:p-12">
         <button
+          type="button"
           onClick={() => setIndex(prevIndex)}
-          aria-label="Previous image"
-          disabled={images.length === 1}
-          className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+          aria-label="Previous photo"
+          disabled={count < 2}
+          className="pointer-events-auto absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/25 focus-visible:outline-white disabled:pointer-events-none disabled:opacity-30 sm:left-4"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="h-6 w-6" aria-hidden="true" />
         </button>
 
-        <div className="relative flex-grow max-w-4xl max-h-[70vh] flex items-center justify-center" onClick={onClose}>
+        <figure className="pointer-events-auto flex max-h-full flex-col items-center">
           <img
-            ref={imageRef}
+            key={image.src}
             src={image.src}
             alt={image.alt}
             width={image.width}
             height={image.height}
-            loading="eager"
             decoding="async"
-            className="max-w-full max-h-[70vh] object-contain shadow-2xl"
-            onLoad={handleLoad}
+            className="max-h-[76vh] max-w-full rounded-sm object-contain shadow-2xl"
           />
-        </div>
+        </figure>
 
         <button
+          type="button"
           onClick={() => setIndex(nextIndex)}
-          aria-label="Next image"
-          disabled={images.length === 1}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+          aria-label="Next photo"
+          disabled={count < 2}
+          className="pointer-events-auto absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/25 focus-visible:outline-white disabled:pointer-events-none disabled:opacity-30 sm:right-4"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="h-6 w-6" aria-hidden="true" />
         </button>
       </div>
 
-      <div className="flex-grow flex items-end justify-end px-6 py-4">
+      <div className="relative z-10 flex items-center justify-between gap-4 px-5 pb-5 text-xs text-white/70 sm:px-8">
+        <p aria-live="polite">
+          {index + 1} / {count}
+        </p>
+        <p className="hidden sm:block">Use ← → to browse · Esc to close</p>
         <button
+          type="button"
           onClick={onClose}
           aria-label="Close gallery"
-          className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          className="rounded-full bg-white/10 p-2.5 text-white transition-colors hover:bg-white/25 focus-visible:outline-white"
         >
-          <X className="w-6 h-6" />
+          <X className="h-5 w-5" aria-hidden="true" />
         </button>
       </div>
     </div>

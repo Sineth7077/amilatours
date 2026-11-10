@@ -1,51 +1,54 @@
 import { useState } from "react";
-import { usePageMeta } from "@/lib/seo";
-import { galleryImages } from "@/config/gallery";
+import { Camera } from "lucide-react";
+import { PageHero } from "@/components/PageHero";
 import { GalleryGrid } from "@/components/GalleryGrid";
 import { GalleryLightbox } from "@/components/GalleryLightbox";
+import { galleryImages } from "@/config/gallery";
+import { galleryHeroImage } from "@/config/hero";
+import { usePageMeta } from "@/lib/seo";
 
 export default function Gallery() {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [initialIndex, setInitialIndex] = useState(0);
+
   usePageMeta({
-    title: "Image Gallery — Photographs of Sri Lanka by Amila Tours",
+    title: "Sri Lanka Travel Gallery — Amila Tours",
     description:
-      "A gallery of real photographs from Sri Lanka, taken across the island by Amila Tours. View the full collection and get in touch to plan your visit.",
-    image: galleryImages[12].src,
+      "A curated collection of photographs from Sri Lanka — wildlife, tea country, coast, ancient cities and everyday island life.",
+    image: galleryHeroImage.src,
+    imageAlt: galleryHeroImage.alt,
     path: "/gallery",
   });
 
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const handleSelect = (image: (typeof galleryImages)[number]) => {
+    const index = galleryImages.findIndex((item) => item.src === image.src);
+    setInitialIndex(index >= 0 ? index : 0);
+    setLightboxOpen(true);
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <main>
-        <section className="py-8 md:py-14">
-          <div className="container mx-auto px-4">
-            <h1 className="font-display text-3xl md:text-4xl font-semibold text-[#0f2b23] mb-3">
-              Image Gallery
-            </h1>
-            <p className="text-muted-foreground max-w-2xl mb-10">
-              All photographs below are from the Amila Tours gallery — real
-              images from Sri Lanka. Click a photograph to view it larger.
-            </p>
-            <GalleryGrid
-              images={galleryImages}
-              columns="4"
-              onSelect={(image) => {
-                setLightboxIndex(galleryImages.findIndex((i) => i.src === image.src));
-                setLightboxOpen(true);
-              }}
-            />
-          </div>
-        </section>
-      </main>
+    <div className="bg-background">
+      <PageHero
+        image={galleryHeroImage}
+        eyebrow="Gallery"
+        title="Sri Lanka in photographs"
+        description="Moments captured on real journeys — wildlife, tea country, coastlines, ancient cities and everyday island life. Select any photo to explore it full screen."
+        size="md"
+      >
+        <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 backdrop-blur">
+          <Camera className="h-4 w-4" aria-hidden="true" />
+          {galleryImages.length} photographs
+        </span>
+      </PageHero>
+
+      <GalleryGrid images={galleryImages} columns="3" onSelect={handleSelect} />
 
       <GalleryLightbox
         open={lightboxOpen}
         images={galleryImages}
-        initialIndex={lightboxIndex}
+        initialIndex={initialIndex}
         onClose={() => setLightboxOpen(false)}
       />
     </div>
   );
-};
+}
